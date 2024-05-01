@@ -1400,12 +1400,19 @@ def SplitOp : Op<Transform_Dialect, "structured.split",
     of the structured op after splitting, in the same order as the target
     operand, with the first handle corresponding to the part with lower
     iteration space indices.
+
+    Multiway split mode is enabled by setting the `multiway_split` attribute
+    to true. In this mode a single target linalg op can be split at multiple
+    points along the specified dimension. The result is a list of linalg ops
+    where the target dimensions for each linalg op in the list corresponds
+    to the chunk sizes specfied in the input split list.
   }];
 
   let arguments = (ins TransformHandleTypeInterface:$target,
                        I64Attr:$dimension,
                        Optional<TransformAnyParamTypeOrAnyHandle>:$dynamic_split_point,
-                       I64Attr:$static_split_point);
+                       I64Attr:$static_split_point,
+                       DefaultValuedOptionalAttr<BoolAttr, "false">:$multiway_split);
   let results = (outs TransformHandleTypeInterface:$first,
                       TransformHandleTypeInterface:$second);
   let hasCustomAssemblyFormat = 1;
