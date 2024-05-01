@@ -1807,6 +1807,45 @@ def TileReductionUsingForallOp :
 }
 
 //===----------------------------------------------------------------------===//
+// ContinuousTileSizesOp
+//===----------------------------------------------------------------------===//
+
+def ContinuousTileSizesOp : Op<Transform_Dialect, "structured.continuous_tile_sizes",
+       [DeclareOpInterfaceMethods<MemoryEffectsOpInterface>,
+        DeclareOpInterfaceMethods<TransformOpInterface>, TransformEachOpTrait,
+        ReportTrackingListenerFailuresOpTrait]> {
+  let description = [{
+    This transform takes a linalg as target and a dimension and target size
+    as attributes to generate a list of (1) exponentially diminishing
+    tile sizes, and (2) the corresponding chunk-sizes the linalg op should
+    be split into along the given dimension. After the linalg has been split
+    along the given dimension (for example using multiway split), each chunk
+    can be tiled with the corresponding tile size in the tile sizes list
+    generated as a result of this op.
+
+    This op returns (1) list of tile sizes, and (2) list of corresponding
+    chunk-sizes the linalg should be split into (on the given dimension).
+
+    #### Return modes
+
+    The operation always succeeds and returns a handle to the transformed
+    function op.
+  }];
+
+
+  let arguments = (ins TransformHandleTypeInterface:$target,
+                       I64Attr:$dimension,
+                       I64Attr:$target_size);
+  let results = (outs TransformAnyParamTypeOrAnyHandle:$tile_sizes,
+                      TransformAnyParamTypeOrAnyHandle:$split_points);
+  let hasVerifier = 1;
+  let assemblyFormat =
+    "$target attr-dict `:` custom<ContinuousTileSizeTypes>("
+    "type($target), type($tile_sizes), type($split_points))";
+
+}
+
+//===----------------------------------------------------------------------===//
 // TileUsingForOp
 //===----------------------------------------------------------------------===//
 
